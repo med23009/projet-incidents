@@ -1,0 +1,290 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Créer un nouvel incident - Administration des incidents{% endblock %}
+
+{% block page_title %}
+Créer un nouvel incident
+{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{% url 'admin_incidents_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+    </a>
+    <button type="submit" form="incident-form" class="btn btn-primary">
+        <i class="fas fa-save"></i> Enregistrer
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Informations de l'incident</h6>
+            </div>
+            <div class="card-body">
+                <form id="incident-form" method="post" enctype="multipart/form-data" action="{% url 'admin_incident_create' %}">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-4">
+                        <ul class="mb-0">
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">Titre *</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.incident_type.id_for_label }}" class="form-label">Type d'incident *</label>
+                                {{ form.incident_type }}
+                                {% if form.incident_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.incident_type.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.description.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Statut</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.status.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.sync_status.id_for_label }}" class="form-label">Statut de synchronisation</label>
+                            {{ form.sync_status }}
+                            {% if form.sync_status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.sync_status.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude *</label>
+                            {{ form.latitude }}
+                            {% if form.latitude.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.latitude.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude *</label>
+                            {{ form.longitude }}
+                            {% if form.longitude.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.longitude.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Localisation sur la carte</label>
+                        <div id="map" style="height: 300px;" class="border rounded"></div>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle"></i> Cliquez sur la carte pour définir la position de l'incident
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.photo.id_for_label }}" class="form-label">Photo</label>
+                                {{ form.photo }}
+                                {% if form.photo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.photo.errors }}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Format recommandé: JPG ou PNG, max 5 MB</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.audio.id_for_label }}" class="form-label">Enregistrement audio</label>
+                                {{ form.audio }}
+                                {% if form.audio.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.audio.errors }}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Format accepté: MP3, WAV, max 10 MB</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Informations</h5>
+                                <p class="mb-0">
+                                    L'incident sera créé avec votre compte comme utilisateur associé.
+                                    <br>La date de création sera automatiquement définie à aujourd'hui.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-4">
+                        <a href="{% url 'admin_incidents_list' %}" class="btn btn-outline-secondary me-2">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer l'incident
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Aperçu photo</h6>
+            </div>
+            <div class="card-body text-center">
+                <div id="photo-preview" class="text-muted py-5">
+                    <i class="fas fa-camera fa-3x mb-3"></i>
+                    <p>L'aperçu de la photo apparaîtra ici une fois sélectionnée</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Aperçu audio</h6>
+            </div>
+            <div class="card-body text-center">
+                <div id="audio-preview" class="text-muted py-5">
+                    <i class="fas fa-microphone fa-3x mb-3"></i>
+                    <p>L'aperçu de l'audio apparaîtra ici une fois sélectionné</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialiser la carte OpenStreetMap
+        const defaultLat = 48.8566; // Paris par défaut
+        const defaultLng = 2.3522;
+        
+        const map = L.map('map').setView([defaultLat, defaultLng], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Créer un marqueur
+        const marker = L.marker([defaultLat, defaultLng], {
+            draggable: true,
+            title: 'Position de l\'incident'
+        }).addTo(map);
+        
+        // Vérifier s'il y a des coordonnées pré-remplies
+        const latField = document.getElementById('{{ form.latitude.id_for_label }}');
+        const lngField = document.getElementById('{{ form.longitude.id_for_label }}');
+        
+        if (latField.value && lngField.value) {
+            const lat = parseFloat(latField.value);
+            const lng = parseFloat(lngField.value);
+            map.setView([lat, lng], 13);
+            marker.setLatLng([lat, lng]);
+        }
+        
+        // Mettre à jour les champs de formulaire lorsque le marqueur est déplacé
+        marker.on('dragend', function() {
+            const position = marker.getLatLng();
+            latField.value = position.lat;
+            lngField.value = position.lng;
+        });
+        
+        // Permettre de cliquer sur la carte pour déplacer le marqueur
+        map.on('click', function(event) {
+            marker.setLatLng(event.latlng);
+            latField.value = event.latlng.lat;
+            lngField.value = event.latlng.lng;
+        });
+        
+        // Prévisualisation de la photo
+        const photoInput = document.getElementById('{{ form.photo.id_for_label }}');
+        if (photoInput) {
+            photoInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('photo-preview');
+                        preview.innerHTML = '<img src="' + e.target.result + '" class="img-fluid rounded" alt="Aperçu de la photo">';
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Prévisualisation de l'audio
+        const audioInput = document.getElementById('{{ form.audio.id_for_label }}');
+        if (audioInput) {
+            audioInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const fileName = this.files[0].name;
+                    const preview = document.getElementById('audio-preview');
+                    preview.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-music me-2"></i> ${fileName}
+                        </div>
+                        <p class="text-muted">Fichier audio sélectionné. Il sera disponible après l'enregistrement.</p>
+                    `;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

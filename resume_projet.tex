@@ -1,0 +1,122 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{enumitem}
+
+\geometry{margin=2.5cm}
+
+\title{\LARGE\textbf{Résumé du Projet\\Application de Signalement d'Incidents Urbains}}
+\authors{\Large Dade Mohamedou - JIDDOU El Moustapha\\}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Présentation du Projet}
+
+L'application "Urban Incidents" est une solution mobile développée avec Flutter permettant aux citoyens de signaler des incidents urbains (accidents, dégradations, problèmes d'infrastructure) en temps réel. Sa particularité est de fonctionner même sans connexion Internet grâce à un système de synchronisation avancé.
+
+\section*{Fonctionnalités Principales}
+
+\subsection*{Application Mobile}
+
+\begin{itemize}
+    \item \textbf{Authentification} : Connexion par email/mot de passe ou biométrie
+    \item \textbf{Signalement d'incidents} : Création de rapports avec titre, description, type, photos, notes vocales et localisation GPS
+    \item \textbf{Mode hors ligne} : Stockage local des incidents avec synchronisation automatique
+    \item \textbf{Carte interactive} : Visualisation des incidents sur une carte OpenStreetMap
+    \item \textbf{Historique} : Consultation des incidents signalés avec filtres et tri
+    \item \textbf{Multilangue} : Support du français et de l'anglais
+\end{itemize}
+
+\subsection*{Interface d'Administration Web}
+
+\begin{itemize}
+    \item \textbf{Tableau de bord} : Statistiques, indicateurs et carte des incidents
+    \item \textbf{Gestion des incidents} : Liste, filtres, édition et suivi
+    \item \textbf{Gestion des utilisateurs} : Consultation et administration des comptes
+    \item \textbf{Sécurité} : Accès restreint aux administrateurs
+\end{itemize}
+
+\section*{Architecture Technique}
+
+\subsection*{Technologies}
+
+\begin{itemize}
+    \item \textbf{Frontend mobile} : Flutter (Dart)
+    \item \textbf{Gestion d'état} : GetX
+    \item \textbf{Base de données locale} : SQLite
+    \item \textbf{Cartographie} : flutter\_map avec OpenStreetMap
+    \item \textbf{Backend} : API REST (Django)
+    \item \textbf{Interface admin} : Bootstrap 5 avec thème SB Admin 2
+\end{itemize}
+
+\subsection*{Composants Principaux}
+
+\begin{itemize}
+    \item \textbf{ApiClient} : Communication avec le backend via Dio, gestion des tokens JWT
+    \item \textbf{DatabaseHelper} : Gestion de la base de données SQLite locale
+    \item \textbf{IncidentService} : Création et gestion des incidents
+    \item \textbf{SyncService} : Synchronisation des données entre l'app et le backend
+    \item \textbf{LocationService} : Géolocalisation des incidents
+\end{itemize}
+
+\section*{Modèle de Données}
+
+\subsection*{Incident}
+\begin{itemize}
+    \item id, title, description
+    \item photoPath, photoUrl, voiceNotePath
+    \item latitude, longitude, createdAt
+    \item status, incidentType, syncStatus
+    \item userId, additionalMedia
+\end{itemize}
+
+\section*{Flux de Données}
+
+\begin{enumerate}
+    \item L'utilisateur crée un incident via l'interface
+    \item L'incident est stocké localement avec statut "pending"
+    \item Si connexion Internet disponible, synchronisation avec le backend
+    \item Après synchronisation, statut mis à jour à "synced"
+    \item L'application fusionne les incidents locaux et distants pour l'affichage
+\end{enumerate}
+
+\section*{Problèmes Résolus}
+
+\begin{itemize}
+    \item \textbf{Disparition des incidents} : Stockage local systématique avec statut "pending"
+    \item \textbf{Affichage incomplet} : Fusion des incidents locaux et distants
+    \item \textbf{Préférence régionale} : Utilisation du drapeau américain pour l'anglais
+\end{itemize}
+
+\section*{Interface Utilisateur}
+
+\begin{itemize}
+    \item \textbf{HomeScreen} : Tableau de bord principal
+    \item \textbf{MapScreen} : Carte interactive des incidents
+    \item \textbf{CreateIncidentScreen} : Formulaire de signalement
+    \item \textbf{IncidentDetailsScreen} : Détails d'un incident
+    \item \textbf{IncidentHistoryScreen} : Historique des signalements
+    \item \textbf{Admin Dashboard} : Interface web de gestion
+\end{itemize}
+
+\section*{Conclusion}
+
+L'application "Urban Incidents" offre une solution complète pour le signalement d'incidents urbains avec comme points forts :
+\begin{itemize}
+    \item Fonctionnement hors ligne avec synchronisation intelligente
+    \item Interface utilisateur intuitive et réactive
+    \item Capture multimédia intégrée
+    \item Géolocalisation précise
+    \item Interface d'administration web complète
+\end{itemize}
+
+Cette solution répond efficacement aux besoins des utilisateurs tout en garantissant la fiabilité et la sécurité des données.
+
+\end{document}

@@ -1,0 +1,121 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+pubspec.lock
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Xcode
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Fichiers sensibles et clés API
+**/*.env
+**/.env*
+**/key.properties
+**/google-services.json
+**/GoogleService-Info.plist
+**/keys.dart
+**/secrets.dart
+**/api_keys.dart
+**/lib/config/env.dart
+**/lib/core/config/secrets.dart
+**/android/app/src/main/AndroidManifest.xml
+**/ios/Runner/AppDelegate.swift
+**/lib/firebase_options.dart
+
+# Base de données locales
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/backend/db.sqlite3
+
+# Fichiers média et assets utilisateur
+**/assets/user_uploads/
+**/assets/temp/
+**/incidents/photos/
+**/incidents/voice_notes/
+**/backend/media/
+
+# Certificats et clés de signing
+**/*.keystore
+**/*.jks
+**/*.p12
+**/*.pem
+**/*.key
+**/*.crt
+**/ios/Runner.ipa
+**/ios/Runner.app.dSYM.zip
+
+# Fichiers Python/Django spécifiques
+**/venv/
+**/__pycache__/
+**/*.py[cod]
+**/migrations/*.py
+!**/migrations/__init__.py
+**/staticfiles/
+**/.env.local
+**/backend/incidents_api/settings_local.py

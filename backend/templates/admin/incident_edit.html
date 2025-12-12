@@ -1,0 +1,423 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+{% if is_create %}
+Créer un nouvel incident
+{% else %}
+Édition de l'incident #{{ incident.id }}
+{% endif %}
+{% endblock %}
+
+{% block page_title %}
+{% if is_create %}
+Créer un nouvel incident
+{% else %}
+Édition de l'incident #{{ incident.id }}
+{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    {% if is_create %}
+    <a href="{% url 'admin_incidents_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Annuler
+    </a>
+    {% else %}
+    <a href="{% url 'admin_incident_detail' incident.id %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Annuler
+    </a>
+    {% endif %}
+    <button type="submit" form="incident-form" class="btn btn-primary">
+        <i class="fas fa-save"></i> Enregistrer
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informations de l'incident</h5>
+            </div>
+            <div class="card-body">
+                <form id="incident-form" method="post" enctype="multipart/form-data" 
+                    {% if is_create %}
+                    action="{% url 'admin_incident_create' %}"
+                    {% else %}
+                    action="{% url 'admin_incident_edit' incident.id %}"
+                    {% endif %}>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-4">
+                        <ul class="mb-0">
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">Titre (Lecture seule)</label>
+                                {{ form.title|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                {% if form.title.errors %}
+                                <div class="text-danger mt-1">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.incident_type.id_for_label }}" class="form-label">Type d'incident (Lecture seule)</label>
+                                {{ form.incident_type|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                {% if form.incident_type.errors %}
+                                <div class="text-danger mt-1">{{ form.incident_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Statut</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div class="text-danger mt-1">{{ form.status.errors }}</div>
+                                {% endif %}
+                                <div class="form-text"><strong>Note:</strong> Seul le statut peut être modifié</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.sync_status.id_for_label }}" class="form-label">Statut de synchronisation (Lecture seule)</label>
+                                {{ form.sync_status|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                {% if form.sync_status.errors %}
+                                <div class="text-danger mt-1">{{ form.sync_status.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description (Lecture seule)</label>
+                        {{ form.description|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                        {% if form.description.errors %}
+                        <div class="text-danger mt-1">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude (Lecture seule)</label>
+                                {{ form.latitude|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                {% if form.latitude.errors %}
+                                <div class="text-danger mt-1">{{ form.latitude.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude (Lecture seule)</label>
+                                {{ form.longitude|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                {% if form.longitude.errors %}
+                                <div class="text-danger mt-1">{{ form.longitude.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Localisation sur la carte (Lecture seule)</label>
+                        <div id="edit-map" style="height: 300px;" class="border rounded"></div>
+                        <div class="form-text mt-1">
+                            <i class="fas fa-info-circle"></i> Visualisation uniquement - La position ne peut pas être modifiée
+                        </div>
+                    </div>
+                    
+                    {% if form.user %}
+                    <div class="mb-4">
+                        <label for="{{ form.user.id_for_label }}" class="form-label">Utilisateur (Lecture seule)</label>
+                        {{ form.user|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                        {% if form.user.errors %}
+                        <div class="text-danger mt-1">{{ form.user.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.mobile_id.id_for_label }}" class="form-label">ID Mobile (Lecture seule)</label>
+                        {{ form.mobile_id|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                        {% if form.mobile_id.errors %}
+                        <div class="text-danger mt-1">{{ form.mobile_id.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">ID unique de l'incident sur l'appareil mobile</div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.photo.id_for_label }}" class="form-label">Photo (Lecture seule)</label>
+                                <div class="input-group">
+                                    {{ form.photo|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                </div>
+                                {% if form.photo.errors %}
+                                <div class="text-danger mt-1">{{ form.photo.errors }}</div>
+                                {% endif %}
+                                {% if incident.photo %}
+                                <div class="mt-2">
+                                    <img src="{{ incident.photo.url }}" class="img-fluid img-thumbnail" style="max-height: 200px;" />
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.audio.id_for_label }}" class="form-label">Enregistrement audio (Lecture seule)</label>
+                                <div class="input-group">
+                                    {{ form.audio|attr:"readonly:readonly"|attr:"disabled:disabled" }}
+                                </div>
+                                {% if form.audio.errors %}
+                                <div class="text-danger mt-1">{{ form.audio.errors }}</div>
+                                {% endif %}
+                                {% if incident.voice_note %}
+                                <div class="mt-2">
+                                    <audio controls>
+                                        <source src="{{ incident.voice_note.url }}" type="audio/mpeg">
+                                        Votre navigateur ne supporte pas l'élément audio.
+                                    </audio>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Removed clear photo and audio options -->
+                    
+                    <div class="alert alert-info">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Informations supplémentaires</h5>
+                                <p class="mb-0">Les champs Date de création et Date de mise à jour sont gérés automatiquement par le système.</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Aperçu photo</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if incident.photo %}
+                <div id="current-photo">
+                    <img src="{{ incident.photo.url }}" alt="Photo de l'incident" class="img-fluid rounded mb-3">
+                </div>
+                {% else %}
+                <div id="current-photo" class="text-muted py-5">
+                    <i class="fas fa-camera fa-3x mb-3"></i>
+                    <p>Aucune photo disponible</p>
+                </div>
+                {% endif %}
+                <div id="new-photo-preview" style="display: none;" class="mb-3">
+                    <h6 class="text-muted mb-2">Nouvelle photo</h6>
+                    <img src="" alt="Aperçu de la nouvelle photo" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Aperçu audio</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if incident.audio %}
+                <div id="current-audio">
+                    <audio controls class="w-100 mb-3">
+                        <source src="{{ incident.audio.url }}" type="audio/mpeg">
+                        Votre navigateur ne supporte pas l'élément audio.
+                    </audio>
+                </div>
+                {% else %}
+                <div id="current-audio" class="text-muted py-5">
+                    <i class="fas fa-microphone-slash fa-3x mb-3"></i>
+                    <p>Aucun enregistrement audio disponible</p>
+                </div>
+                {% endif %}
+                <div id="new-audio-preview" style="display: none;">
+                    <h6 class="text-muted mb-2">Nouvel audio</h6>
+                    <audio controls class="w-100">
+                        <source src="" type="audio/mpeg">
+                        Votre navigateur ne supporte pas l'élément audio.
+                    </audio>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation de la carte OpenStreetMap
+        function initMap() {
+            // Utiliser des variables intermédiaires pour éviter les erreurs de linting
+            var defaultLat = 48.8566; // Paris par défaut
+            var defaultLng = 2.3522;  // Paris par défaut
+            
+            // Récupérer les valeurs de l'incident s'il existe
+            {% if incident and incident.latitude %}
+            var latitude = {{ incident.latitude|floatformat:6 }};
+            {% else %}
+            var latitude = defaultLat;
+            {% endif %}
+            
+            {% if incident and incident.longitude %}
+            var longitude = {{ incident.longitude|floatformat:6 }};
+            {% else %}
+            var longitude = defaultLng;
+            {% endif %}
+            
+            const map = L.map('edit-map').setView([latitude, longitude], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Ajouter un marqueur
+            let marker = L.marker([latitude, longitude], {
+                draggable: true,
+                title: "Position de l'incident"
+            }).addTo(map);
+            
+            // Mettre à jour les coordonnées lorsqu'on déplace le marqueur
+            marker.on('dragend', function(event) {
+                const latLng = marker.getLatLng();
+                document.getElementById('{{ form.latitude.id_for_label }}').value = latLng.lat;
+                document.getElementById('{{ form.longitude.id_for_label }}').value = latLng.lng;
+            });
+            
+            // Permettre de cliquer sur la carte pour déplacer le marqueur
+            map.on('click', function(event) {
+                marker.setLatLng(event.latlng);
+                document.getElementById('{{ form.latitude.id_for_label }}').value = event.latlng.lat;
+                document.getElementById('{{ form.longitude.id_for_label }}').value = event.latlng.lng;
+            });
+            
+            // Mettre à jour la carte lorsque les coordonnées sont modifiées manuellement
+            const latInput = document.getElementById('{{ form.latitude.id_for_label }}');
+            const lngInput = document.getElementById('{{ form.longitude.id_for_label }}');
+            
+            function updateMarkerFromInputs() {
+                const lat = parseFloat(latInput.value);
+                const lng = parseFloat(lngInput.value);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    const newLatLng = new google.maps.LatLng(lat, lng);
+                    marker.setPosition(newLatLng);
+                    map.setCenter(newLatLng);
+                }
+            }
+            
+            latInput.addEventListener('change', updateMarkerFromInputs);
+            lngInput.addEventListener('change', updateMarkerFromInputs);
+        }
+        
+        // Initialiser la carte directement
+        initMap();
+        
+        // Désactiver l'édition si nécessaire
+        if ({{ is_readonly|yesno:"true,false" }}) {
+            // Si on est en mode lecture seule, on désactive le drag du marqueur
+            if (window.marker) {
+                window.marker.dragging.disable();
+                window.map.off('click');
+            }
+        }
+
+        // Gestion de l'aperçu de la photo
+        const photoInput = document.getElementById('{{ form.photo.id_for_label }}');
+        const newPhotoPreview = document.getElementById('new-photo-preview');
+        const currentPhoto = document.getElementById('current-photo');
+        
+        photoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newPhotoPreview.querySelector('img').src = e.target.result;
+                    newPhotoPreview.style.display = 'block';
+                    if (currentPhoto) {
+                        currentPhoto.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Gestion de la suppression de photo
+        const removePhotoBtn = document.getElementById('remove-photo-btn');
+        const clearPhotoInput = document.getElementById('{{ form.clear_photo.id_for_label }}');
+        
+        if (removePhotoBtn && clearPhotoInput) {
+            removePhotoBtn.addEventListener('click', function() {
+                clearPhotoInput.value = 'true';
+                if (currentPhoto) {
+                    currentPhoto.style.display = 'none';
+                }
+                photoInput.value = '';
+                newPhotoPreview.style.display = 'none';
+                this.disabled = true;
+            });
+        }
+        
+        // Gestion de la suppression d'audio
+        const removeAudioBtn = document.getElementById('remove-audio-btn');
+        const clearAudioInput = document.getElementById('{{ form.clear_audio.id_for_label }}');
+        
+        if (removeAudioBtn && clearAudioInput) {
+            removeAudioBtn.addEventListener('click', function() {
+                clearAudioInput.value = 'true';
+                const currentAudio = document.getElementById('current-audio');
+                if (currentAudio) {
+                    currentAudio.style.display = 'none';
+                }
+                document.getElementById('{{ form.audio.id_for_label }}').value = '';
+                document.getElementById('new-audio-preview').style.display = 'none';
+                this.disabled = true;
+            });
+        }
+        
+        // Gestion de l'aperçu audio
+        const audioInput = document.getElementById('{{ form.audio.id_for_label }}');
+        const newAudioPreview = document.getElementById('new-audio-preview');
+        const currentAudio = document.getElementById('current-audio');
+        
+        audioInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const audioUrl = URL.createObjectURL(this.files[0]);
+                newAudioPreview.querySelector('source').src = audioUrl;
+                newAudioPreview.querySelector('audio').load();
+                newAudioPreview.style.display = 'block';
+                if (currentAudio) {
+                    currentAudio.style.display = 'none';
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 
