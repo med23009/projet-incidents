@@ -8,13 +8,13 @@ import 'connectivity_service.dart';
 
 class ApiService extends GetxService {
   // URL de base de l'API
- // static const String baseUrl = 'http://10.0.2.2:8000/api'; // Pour l'émulateur Android
-  static const String baseUrl = 'http://10.141.223.205:8000/api'; // Adresse IP de l'ordinateur
+  // static const String baseUrl = 'http://10.0.2.2:8000/api'; // Pour l'émulateur Android
+  // static const String baseUrl = 'http://10.141.223.205:8000/api'; // Adresse IP de l'ordinateur
   // static const String baseUrl = 'http://localhost:8000/api'; // Pour le développement local
   // static const String baseUrl = 'https://votre-api-de-production.com/api'; // Pour la production
   
   // URL du serveur déployé sur PythonAnywhere
-  // static const String baseUrl = 'https://ahmedabddayme.pythonanywhere.com/api';
+  static const String baseUrl = 'https://medou.pythonanywhere.com/api';
   
   final _storage = const FlutterSecureStorage();
   final RxBool isConnected = false.obs;

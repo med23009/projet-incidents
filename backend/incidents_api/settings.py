@@ -12,9 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172.20.10.18', '10.141.223.205', '192.168.100.9', 'votre-nom-utilisateur.pythonanywhere.com', 'ahmedabddayme.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',  'medou.pythonanywhere.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -70,29 +70,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'incidents_api.wsgi.application'
 
-# Database
-if os.getenv('PYTHONANYWHERE', 'False') == 'True':
-    # Configuration de la base de données pour PythonAnywhere
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_NAME', 'votre-nom-utilisateur$incidents'),
-            'USER': os.getenv('DB_USER', 'votre-nom-utilisateur'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'votre-nom-utilisateur.mysql.pythonanywhere-services.com'),
-            'OPTIONS': {
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
-        }
+# Configuration de la base de données locale
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Configuration de la base de données locale
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -157,7 +141,7 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG  # Autoriser tous les origines seulement en déve
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = [
         "https://votre-nom-utilisateur.pythonanywhere.com",
-        "https://ahmedabddayme.pythonanywhere.com",
+        "https://medou.pythonanywhere.com",
         # Ajoutez ici d'autres domaines autorisés
     ]
 CORS_ALLOW_CREDENTIALS = True
