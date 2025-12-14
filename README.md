@@ -53,12 +53,10 @@ This application stands in solidarity with Palestine. The app icon features the 
   - **Internationalization**: Flutter Intl
 
 - **Backend**: Django
-  - **Database**: PostgreSQL
+  - **Database**: SQLite
   - **API**: Django REST Framework
   - **Authentication**: JWT
   - **Media Storage**: Django Storage
-  - **Caching**: Redis
-  - **Task Queue**: Celery
 
 ## 📁 Project Structure
 
@@ -278,8 +276,8 @@ The frontend is built with Flutter, a cross-platform UI toolkit that allows us t
    )
    ```
 
-5. **Media Handling (Images, Videos, Voice)**
-   - The app supports multiple media types for comprehensive incident documentation
+5. **Media Handling (Images)**
+   - The app supports images for comprehensive incident documentation
    
    **Image Capture and Upload:**
    ```dart
@@ -307,252 +305,6 @@ The frontend is built with Flutter, a cross-platform UI toolkit that allows us t
      } catch (e) {
        print('Error capturing image: $e');
        Get.snackbar('Error', 'Failed to capture image');
-     }
-   }
-   ```
-   
-   **Video Recording:**
-   ```dart
-   Future<void> recordVideo() async {
-     try {
-       final pickedFile = await ImagePicker().pickVideo(
-         source: ImageSource.camera,
-         maxDuration: const Duration(minutes: 2), // Limit video length
-       );
-       
-       if (pickedFile != null) {
-         // Process video (compression, thumbnailing)
-         final compressedVideo = await _compressVideo(File(pickedFile.path));
-         
-         // Add to incident media list
-         final media = IncidentMedia(
-           file: compressedVideo,
-           type: MediaType.video,
-           isUploaded: false,
-           thumbnail: await _generateVideoThumbnail(compressedVideo.path),
-         );
-         
-         incidentMediaList.add(media);
-         update(); // Update UI
-         
-         // Prepare for upload when online
-         _mediaUploadQueue.add(media);
-       }
-     } catch (e) {
-       print('Error recording video: $e');
-       Get.snackbar('Error', 'Failed to record video');
-     }
-   }
-   
-   // Video compression helper
-   Future<File> _compressVideo(File videoFile) async {
-     // Implementation using video_compress package
-     final info = await VideoCompress.compressVideo(
-       videoFile.path,
-       quality: VideoQuality.MediumQuality,
-       deleteOrigin: false,
-     );
-     return File(info!.path!);
-   }
-   
-   // Thumbnail generation helper
-   Future<File?> _generateVideoThumbnail(String videoPath) async {
-     // Implementation using video_thumbnail package
-     final thumbnailPath = await VideoThumbnail.thumbnailFile(
-       video: videoPath,
-       imageFormat: ImageFormat.JPEG,
-       quality: 75,
-     );
-     return thumbnailPath != null ? File(thumbnailPath) : null;
-   }
-   ```
-   
-   **Voice Recording:**
-   ```dart
-   class VoiceRecordingController extends GetxController {
-     FlutterSoundRecorder? _recorder;
-     String? _recordingPath;
-     bool isRecording = false;
-     
-     @override
-     void onInit() {
-       super.onInit();
-       _initRecorder();
-     }
-     
-     Future<void> _initRecorder() async {
-       _recorder = FlutterSoundRecorder();
-       await _recorder!.openRecorder();
-     }
-     
-     Future<void> startRecording() async {
-       try {
-         // Get temp directory for storing recording
-         final tempDir = await getTemporaryDirectory();
-         _recordingPath = '${tempDir.path}/voice_note_${DateTime.now().millisecondsSinceEpoch}.aac';
-         
-         // Start recording
-         await _recorder!.startRecorder(toFile: _recordingPath);
-         isRecording = true;
-         update();
-       } catch (e) {
-         print('Error starting recording: $e');
-         Get.snackbar('Error', 'Failed to start recording');
-       }
-     }
-     
-     Future<String?> stopRecording() async {
-       try {
-         await _recorder!.stopRecorder();
-         isRecording = false;
-         update();
-         return _recordingPath;
-       } catch (e) {
-         print('Error stopping recording: $e');
-         Get.snackbar('Error', 'Failed to stop recording');
-         return null;
-       }
-     }
-     
-     Future<void> addVoiceNoteToIncident() async {
-       final path = await stopRecording();
-       if (path != null) {
-         // Add to incident media list
-         final media = IncidentMedia(
-           file: File(path),
-           type: MediaType.audio,
-           isUploaded: false,
-         );
-         
-         Get.find<IncidentController>().addMedia(media);
-       }
-     }
-     
-     @override
-     void onClose() {
-       _recorder?.closeRecorder();
-       super.onClose();
-     }
-   }
-   ```
-   
-   **Media Upload Management:**
-   ```dart
-   Future<void> uploadIncidentMedia(int incidentId, List<IncidentMedia> mediaList) async {
-     for (final media in mediaList) {
-       if (media.isUploaded) continue;
-       
-       try {
-         // Create multipart request
-         final request = http.MultipartRequest(
-           'POST',
-           Uri.parse('$apiUrl/incidents/$incidentId/media/'),
-         );
-         
-         // Add authorization header
-         request.headers.addAll({
-           'Authorization': 'Bearer $token',
-         });
-         
-         // Add file
-         request.files.add(
-           await http.MultipartFile.fromPath(
-             'file',
-             media.file.path,
-             contentType: _getMediaContentType(media.type),
-           ),
-         );
-         
-         // Add media type
-         request.fields['file_type'] = media.type.toString().split('.').last;
-         
-         // Send request
-         final response = await request.send();
-         
-         if (response.statusCode == 202) {
-           // Update media status
-           media.isUploaded = true;
-           update();
-         } else {
-           throw Exception('Failed to upload media: ${response.statusCode}');
-         }
-       } catch (e) {
-         print('Error uploading media: $e');
-         // Add to retry queue
-         _mediaUploadRetryQueue.add(media);
-       }
-     }
-   }
-   ```
-
-6. **Multi-language Support**
-   - Internationalization with Flutter Intl
-   - Language switching capability
-   - Example code:
-   ```dart
-   // Language switching
-   void changeLanguage(String languageCode) {
-     final locale = Locale(languageCode);
-     Get.updateLocale(locale);
-   }
-   
-   // Using translations
-   Text(AppLocalizations.of(context).incidentReportTitle)
-   ```
-   
-   **Language Selector Implementation:**
-   ```dart
-   class LanguageSelector extends StatelessWidget {
-     @override
-     Widget build(BuildContext context) {
-       return PopupMenuButton<String>(
-         icon: const Icon(Icons.language),
-         onSelected: (String languageCode) {
-           Get.find<SettingsController>().changeLanguage(languageCode);
-         },
-         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-           PopupMenuItem<String>(
-             value: 'en',
-             child: Row(
-               children: [
-                 Image.asset('assets/flags/us.svg', width: 24, height: 24),
-                 const SizedBox(width: 10),
-                 const Text('English'),
-               ],
-             ),
-           ),
-           PopupMenuItem<String>(
-             value: 'es',
-             child: Row(
-               children: [
-                 Image.asset('assets/flags/es.svg', width: 24, height: 24),
-                 const SizedBox(width: 10),
-                 const Text('Español'),
-               ],
-             ),
-           ),
-           PopupMenuItem<String>(
-             value: 'fr',
-             child: Row(
-               children: [
-                 Image.asset('assets/flags/fr.svg', width: 24, height: 24),
-                 const SizedBox(width: 10),
-                 const Text('Français'),
-               ],
-             ),
-           ),
-           PopupMenuItem<String>(
-             value: 'ar',
-             child: Row(
-               children: [
-                 Image.asset('assets/flags/sa.svg', width: 24, height: 24),
-                 const SizedBox(width: 10),
-                 const Text('العربية'),
-               ],
-             ),
-           ),
-         ],
-       );
      }
    }
    ```
@@ -608,7 +360,7 @@ The backend is built with Django, a high-level Python web framework that encoura
    }
    ```
 
-3. **PostgreSQL Database**
+3. **SQLite Database**
    - Relational database for data storage
    - Example model:
    ```python
@@ -646,27 +398,6 @@ The backend is built with Django, a high-level Python web framework that encoura
            ('audio', 'Audio'),
        ))
        uploaded_at = models.DateTimeField(auto_now_add=True)
-   ```
-
-5. **Celery for Asynchronous Tasks**
-   - Background processing
-   - Scheduled tasks
-   - Example code:
-   ```python
-   # tasks.py
-   @shared_task
-   def process_incident_media(media_id):
-       media = IncidentMedia.objects.get(id=media_id)
-       # Process media (resize images, compress videos, etc.)
-       # ...
-       return f"Processed media {media_id}"
-   
-   # views.py
-   def upload_media(request, incident_id):
-       # ... handle file upload
-       media = IncidentMedia.objects.create(incident_id=incident_id, file=file)
-       process_incident_media.delay(media.id)
-       return Response({'status': 'processing'})
    ```
 
 ### <a name="communication-flow"></a>Communication Flow
@@ -712,92 +443,6 @@ The frontend and backend communicate through RESTful API endpoints. Here's the t
        |<-- 200 OK (sync results) ----------------|
    ```
 
-## 📦 Package Details
-
-### Frontend Packages
-
-1. **GetX (^4.6.5)**
-   - Purpose: State management, dependency injection, route management
-   - [GitHub Repository](https://github.com/jonataslaw/getx)
-
-2. **SQLite (^2.0.1)**
-   - Purpose: Local database for offline storage
-   - [pub.dev](https://pub.dev/packages/sqflite)
-
-3. **Google Maps Flutter (^2.2.5)**
-   - Purpose: Maps integration for incident location
-   - [pub.dev](https://pub.dev/packages/google_maps_flutter)
-
-4. **Image Picker (^0.8.7)**
-   - Purpose: Selecting images from gallery or camera
-   - [pub.dev](https://pub.dev/packages/image_picker)
-
-5. **Flutter Sound (^9.2.13)**
-   - Purpose: Audio recording for incident descriptions
-   - [pub.dev](https://pub.dev/packages/flutter_sound)
-
-6. **Geolocator (^9.0.2)**
-   - Purpose: Getting device location
-   - [pub.dev](https://pub.dev/packages/geolocator)
-
-7. **Cached Network Image (^3.2.3)**
-   - Purpose: Loading and caching network images
-   - [pub.dev](https://pub.dev/packages/cached_network_image)
-
-8. **Local Authentication (^2.1.6)**
-   - Purpose: Biometric authentication
-   - [pub.dev](https://pub.dev/packages/local_auth)
-
-9. **Connectivity Plus (^3.0.3)**
-   - Purpose: Network connectivity detection
-   - [pub.dev](https://pub.dev/packages/connectivity_plus)
-
-10. **Flutter Intl (^0.0.1)**
-    - Purpose: Internationalization
-    - [pub.dev](https://pub.dev/packages/flutter_intl)
-
-### Backend Packages
-
-1. **Django (4.2.0)**
-   - Purpose: Web framework
-   - [PyPI](https://pypi.org/project/Django/)
-
-2. **Django REST Framework (3.14.0)**
-   - Purpose: RESTful API framework
-   - [PyPI](https://pypi.org/project/djangorestframework/)
-
-3. **djangorestframework-simplejwt (5.2.2)**
-   - Purpose: JWT authentication
-   - [PyPI](https://pypi.org/project/djangorestframework-simplejwt/)
-
-4. **psycopg2-binary (2.9.6)**
-   - Purpose: PostgreSQL adapter
-   - [PyPI](https://pypi.org/project/psycopg2-binary/)
-
-5. **Pillow (9.5.0)**
-   - Purpose: Image processing
-   - [PyPI](https://pypi.org/project/Pillow/)
-
-6. **django-storages (1.13.2)**
-   - Purpose: Storage backends
-   - [PyPI](https://pypi.org/project/django-storages/)
-
-7. **celery (5.2.7)**
-   - Purpose: Asynchronous task queue
-   - [PyPI](https://pypi.org/project/celery/)
-
-8. **redis (4.5.4)**
-   - Purpose: Caching and message broker
-   - [PyPI](https://pypi.org/project/redis/)
-
-9. **django-cors-headers (3.14.0)**
-   - Purpose: Cross-Origin Resource Sharing
-   - [PyPI](https://pypi.org/project/django-cors-headers/)
-
-10. **drf-yasg (1.21.5)**
-    - Purpose: API documentation
-    - [PyPI](https://pypi.org/project/drf-yasg/)
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -807,15 +452,13 @@ The frontend and backend communicate through RESTful API endpoints. Here's the t
 - Python 3.8+ (for backend)
 - Django 4.0+ (for backend)
 - Git
-- PostgreSQL
-- Redis (for backend caching and Celery)
 
 ### Installation
 
 1. Clone the repository
 
 ```bash
-git clone https://github.com/ahmedabddayme3752/accidentsapp.git
+git clone https://github.com/med23009/projet-incidents.git
 ```
 
 2. Install frontend dependencies
@@ -832,50 +475,25 @@ cd backend
 pip install -r requirements.txt
 ```
 
-4. Set up PostgreSQL database
-
-```bash
-# Create database
-createdb incidents_db
-
-# Configure database in backend/settings.py
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'incidents_db',
-        'USER': 'postgres',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
-5. Run migrations
+4. Run migrations
 
 ```bash
 python manage.py migrate
 ```
 
-6. Create a superuser
+5. Create a superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-7. Start the backend server
+6. Start the backend server
 
 ```bash
 python manage.py runserver
 ```
 
-8. Start Celery worker (in a separate terminal)
-
-```bash
-celery -A backend worker -l info
-```
-
-9. Run the Flutter app
+7. Run the Flutter app
 
 ```bash
 cd ..
@@ -916,4 +534,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Django community for the robust backend framework
 - All contributors and supporters
 - The open-source community
-
